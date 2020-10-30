@@ -5,12 +5,15 @@ ThisBuild / semanticdbEnabled := true
 ThisBuild / semanticdbVersion := scalafixSemanticdb.revision // use Scalafix compatible version
 ThisBuild / scalafixScalaBinaryVersion := V.scala213BinaryVersion
 ThisBuild / scalafixDependencies ++= List("com.github.liancheng" %% "organize-imports" % V.organizeImports)
+ThisBuild / organization := "ch.epfl.scala"
+ThisBuild / version := "0.1.0-SNAPSHOT"
 
 lazy val interfaces = project
   .in(file("interfaces"))
   .settings(
     libraryDependencies ++= Seq(
-      "ch.epfl.lamp" % "dotty-compiler_0.27" % V.dotty
+      "ch.epfl.lamp"    % "dotty-compiler_0.27" % V.dotty,
+      "io.get-coursier" % "interface"           % V.coursierInterface
     ),
     crossPaths := false,
     autoScalaLibrary := false
@@ -55,6 +58,16 @@ lazy val input = project
   .settings(
     scalacOptions ++= List("-P:semanticdb:synthetics:on")
   )
+  .disablePlugins(ScalafixPlugin)
+
+lazy val plugin = project
+  .in(file("plugin"))
+  .enablePlugins(SbtPlugin)
+  .settings(
+    scalaVersion := V.scala212,
+    name := "sbt-scala-migrat3"
+  )
+  .dependsOn(interfaces)
   .disablePlugins(ScalafixPlugin)
 
 lazy val output = project
@@ -131,9 +144,11 @@ lazy val `scalafix-tests` = project
 lazy val V = new {
   val scala213              = "2.13.3"
   val scala213BinaryVersion = "2.13"
+  val scala212              = "2.12.11"
   val scalatest             = "3.2.0"
   val dotty                 = "0.27.0-RC1"
   val scalafix              = "0.9.20"
   val scribe                = "2.7.12"
   val organizeImports       = "0.4.3"
+  val coursierInterface     = "0.0.25"
 }

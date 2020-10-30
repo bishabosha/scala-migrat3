@@ -2,11 +2,8 @@ package interfaces;
 
 import java.nio.file.Path;
 
-public interface MigrateToScala3 {
+public interface MigrateService {
 
-    /**
-     * @throws an Exception
-     */
     String previewMigration(Path sourceRoot,
                             Path source,
                             Path[] scala2Classpath,
