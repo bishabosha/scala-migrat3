@@ -45,7 +45,7 @@ class ExplicitImplicitsRule(g: ScalafixGlobal) extends SemanticRule("ExplicitImp
     lazy implicit val unit: g.CompilationUnit = g.newCompilationUnit(doc.input.text, doc.input.syntax)
 
     doc.synthetics.flatMap {
-      case syn @ ApplyTree(function, arguments) =>
+      case syn @ ApplyTree(_, _) =>
         // case for implicit params
         if (syn.toString.startsWith("*")) {
           for {
@@ -55,7 +55,11 @@ class ExplicitImplicitsRule(g: ScalafixGlobal) extends SemanticRule("ExplicitImp
         }
         // case for implicit conversions
         else if (syn.toString().contains("(*)")) {
-          None
+          println(s"patch wrap from ${syn} at ${syn.symbol.get.normalized}")
+          for {
+            originalTree <- SyntheticHelper.getOriginalTree(syn)
+            gt           <- getGlobalTree(originalTree)
+          } yield Patch.replaceTree(originalTree, gt.toString)
         } else None
       case _ => None
     }.toList.asPatch
@@ -79,6 +83,16 @@ class ExplicitImplicitsRule(g: ScalafixGlobal) extends SemanticRule("ExplicitImp
                 case _ => None
               }
     } yield args
+
+  private def getGlobalTree(originalTree: Tree)(implicit unit: g.CompilationUnit): Option[Any] =
+    for {
+      context    <- CompilerService.getContextDefault(originalTree, g)
+      globalTree <- getTreeFromContext(context)
+    } yield sanitizeGlobalTree(globalTree)
+
+  private def sanitizeGlobalTree(globalTree: g.Tree): g.Tree = {
+    globalTree
+  }
 
   private def printSymbol(symbol: g.Symbol): Option[String] =
     if (symbol.isLocalToBlock && !symbol.name.startsWith("evidence$"))

@@ -13,6 +13,7 @@ import scala.meta.internal.pc.ScalafixGlobal
 import scala.meta.internal.proxy.GlobalProxy
 import scala.meta.io.AbsolutePath
 import scala.meta.tokens.Token
+import scala.meta.Tree
 
 object CompilerService {
 
@@ -43,6 +44,9 @@ object CompilerService {
 
   def getContext(name: Term.Name, g: ScalafixGlobal)(implicit unit: g.CompilationUnit): Option[g.Context] =
     getContext(name.pos.start, g)
+
+  def getContextDefault(tree: Tree, g: ScalafixGlobal)(implicit unit: g.CompilationUnit): Option[g.Context] =
+    getContext(tree.pos.start, g)
 
   private def getContext(position: Int, g: ScalafixGlobal)(implicit unit: g.CompilationUnit): Option[g.Context] = {
     val gpos  = unit.position(position)
